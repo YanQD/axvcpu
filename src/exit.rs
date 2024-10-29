@@ -1,4 +1,5 @@
 use axaddrspace::{GuestPhysAddr, MappingFlags};
+use timer_list::TimeValue;
 
 #[allow(unused_imports)] // used in doc
 use super::AxArchVCpu;
@@ -179,4 +180,10 @@ pub enum AxVCpuExitReason {
         /// Architecture related VM entry failure reasons.
         hardware_entry_failure_reason: u64,
     },
+    /// Register a timer
+    /// In riscv, clock interrupts should be handled by vmm.
+    /// Because vmm is needed to register clock interrupts.
+    SetTimer { time: u64, callback: fn(TimeValue) },
+    /// A clock interrupt occurs
+    TimerIrq,
 }
