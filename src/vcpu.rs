@@ -39,7 +39,7 @@ pub struct AxVCpuInnerMut {
     /// The state of the vcpu.
     state: VCpuState,
     /// The cpu id of the physical CPU that the vcpu is bound to.
-    cpu_id: isize,
+    cpu_id: Option<usize>,
 }
 
 /// A virtual CPU with architecture-independent interface.
@@ -80,7 +80,7 @@ impl<A: AxArchVCpu> AxVCpu<A> {
             },
             inner_mut: RefCell::new(AxVCpuInnerMut {
                 state: VCpuState::Created,
-                cpu_id: -1,
+                cpu_id: None,
             }),
             arch_vcpu: UnsafeCell::new(A::new(arch_config)?),
         })
@@ -214,8 +214,8 @@ impl<A: AxArchVCpu> AxVCpu<A> {
     }
 
     /// Bind the vcpu to the current physical CPU.
-    pub fn bind(&self, cpu_id: isize) -> AxResult {
-        self.inner_mut.borrow_mut().cpu_id = cpu_id;
+    pub fn bind(&self, cpu_id: usize) -> AxResult {
+        self.inner_mut.borrow_mut().cpu_id = Some(cpu_id);
         self.manipulate_arch_vcpu(VCpuState::Free, VCpuState::Ready, |arch_vcpu| {
             arch_vcpu.bind()
         })
@@ -223,7 +223,7 @@ impl<A: AxArchVCpu> AxVCpu<A> {
 
     /// Unbind the vcpu from the current physical CPU.
     pub fn unbind(&self) -> AxResult {
-        self.inner_mut.borrow_mut().cpu_id = -1;
+        self.inner_mut.borrow_mut().cpu_id = None;
         self.manipulate_arch_vcpu(VCpuState::Ready, VCpuState::Free, |arch_vcpu| {
             arch_vcpu.unbind()
         })
@@ -239,7 +239,7 @@ impl<A: AxArchVCpu> AxVCpu<A> {
         self.get_arch_vcpu().set_gpr(reg, val);
     }
 
-    pub fn get_cpu_id(&self) -> isize {
+    pub fn get_cpu_id(&self) -> Option<usize> {
         self.inner_mut.borrow().cpu_id
     }
 }
