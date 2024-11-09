@@ -64,6 +64,27 @@ impl AccessWidth {
 /// The port number of an I/O operation.
 type Port = u16;
 
+/// RISC-V SbiCall Type
+#[derive(Debug)]
+pub enum SbiFunction {
+    SetTimer {
+        /// Cycles
+        deadline: u64,
+        // /// Extended, which is not included in origin function
+        // callback: fn(TimeValue),
+    },
+    // RemoteFence {
+    //     id: u64,
+    //     start: u64,
+    //     end: u64,
+    // }
+    // ...
+    // param: [u64; 6],
+    // extension_id: u64,
+    // function_id: u64,
+}
+
+
 /// The result of [`AxArchVCpu::run`].
 /// Can we reference or directly reuse content from [kvm-ioctls](https://github.com/rust-vmm/kvm-ioctls/blob/main/src/ioctls/vcpu.rs) ?
 #[non_exhaustive]
@@ -180,10 +201,18 @@ pub enum AxVCpuExitReason {
         /// Architecture related VM entry failure reasons.
         hardware_entry_failure_reason: u64,
     },
-    /// Register a timer
-    /// In riscv, clock interrupts should be handled by vmm.
-    /// Because vmm is needed to register clock interrupts.
-    SetTimer { time: u64, callback: fn(TimeValue) },
-    /// A clock interrupt occurs
-    TimerIrq,
+    /// SbiCall
+    /// Some RISC-V SbiCalls should be handled in VM, others will stay in RISCV_VCpu
+    SbiCall(SbiFunction),
+    /// TODO: WFI
+    Wfi,
+    /// TODO: IPI
+    IPI {
+        mask: u64,
+        // base ?
+        base: u64,
+    },
 }
+
+
+

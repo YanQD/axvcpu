@@ -17,3 +17,6 @@ pub use vcpu::*;
 
 // TODO: consider, should [`AccessWidth`] be moved to a new crate?
 pub use exit::{AccessWidth, AxVCpuExitReason};
+
+// TODO: only riscv
+pub use exit::SbiFunction;

@@ -3,6 +3,8 @@ use core::cell::{RefCell, UnsafeCell};
 use axaddrspace::{GuestPhysAddr, HostPhysAddr};
 use axerrno::{ax_err, AxResult};
 
+use crate::arch_vcpu;
+
 use super::{AxArchVCpu, AxVCpuExitReason};
 
 /// The constant part of `AxVCpu`.
@@ -241,6 +243,16 @@ impl<A: AxArchVCpu> AxVCpu<A> {
 
     pub fn get_cpu_id(&self) -> Option<usize> {
         self.inner_mut.borrow().cpu_id
+    }
+
+    /// TEST
+    pub fn notify_irq(&self, irq: usize) {
+        self.get_arch_vcpu().notify_irq(irq);
+    }
+
+    /// TEST
+    pub fn denotify_irq(&self, irq: usize) {
+        self.get_arch_vcpu().denotify_irq(irq);
     }
 }
 

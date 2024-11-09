@@ -41,4 +41,12 @@ pub trait AxArchVCpu: Sized {
 
     /// Set the value of a general-purpose register according to the given index.
     fn set_gpr(&mut self, reg: usize, val: usize);
+
+    /// TEST: Assert irq
+    fn notify_irq(&mut self, irq: usize);
+
+    /// TEST: Assert irq
+    fn denotify_irq(&mut self, irq: usize);
+    
+
 }
