@@ -1,7 +1,8 @@
 use core::cell::{RefCell, UnsafeCell};
 
 use axaddrspace::{GuestPhysAddr, HostPhysAddr};
-use axerrno::{AxResult, ax_err};
+use axdevice_base::VCpuIf;
+use axerrno::{ax_err, AxResult};
 
 use super::{AxArchVCpu, AxVCpuExitReason};
 
@@ -232,6 +233,29 @@ impl<A: AxArchVCpu> AxVCpu<A> {
     /// Sets the value of a general-purpose register according to the given index.
     pub fn set_gpr(&self, reg: usize, val: usize) {
         self.get_arch_vcpu().set_gpr(reg, val);
+    }
+}
+
+/// Implementation of the `VCpuIf` trait for `AxVCpu<A>`.
+///
+/// This implementation provides the required methods for interacting with a virtual CPU
+/// that conforms to the `AxArchVCpu` architecture.
+impl<A: AxArchVCpu> VCpuIf for AxVCpu<A> {
+    /// Returns the ID of the virtual CPU.
+    ///
+    /// # Returns
+    /// * `usize` - The ID of the virtual CPU.
+    fn vcpu_id(&self) -> usize {
+        self.id()
+    }
+
+    /// Sets the value of a general-purpose register.
+    ///
+    /// # Arguments
+    /// * `reg` - The index of the register to set.
+    /// * `val` - The value to set the register to.
+    fn set_gpr(&self, reg: usize, val: usize) {
+        self.set_gpr(reg, val);
     }
 }
 
