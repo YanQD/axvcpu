@@ -63,6 +63,13 @@ impl AccessWidth {
 /// The port number of an I/O operation.
 type Port = u16;
 
+#[non_exhaustive]
+#[derive(Debug)]
+pub enum AxVcpuFunction {
+    SetTimer { deadline: u64 },
+    None,
+}
+
 /// The result of [`AxArchVCpu::run`].
 /// Can we reference or directly reuse content from [kvm-ioctls](https://github.com/rust-vmm/kvm-ioctls/blob/main/src/ioctls/vcpu.rs) ?
 #[non_exhaustive]
@@ -196,6 +203,7 @@ pub enum AxVCpuExitReason {
     ///
     /// This is used to notify the hypervisor that the whole system should be powered off.
     SystemDown,
+    VcpuFuncCall(AxVcpuFunction),
     /// Nothing special happened, the vcpu has handled the exit itself.
     ///
     /// This exists to allow the caller to have a chance to check virtual devices/physical devices/virtual interrupts.
