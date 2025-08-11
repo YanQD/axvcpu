@@ -45,8 +45,9 @@ pub struct AxVCpuInnerMut {
 
 /// A virtual CPU with architecture-independent interface.
 ///
-/// By delegating the architecture-specific operations to a struct implementing [`AxArchVCpu`], this struct provides
-/// a unified interface and state management model for virtual CPUs of different architectures.
+/// By delegating the architecture-specific operations to a struct implementing [`AxArchVCpu`], this
+/// struct provides a unified interface and state management model for virtual CPUs of different
+/// architectures.
 ///
 /// The architecture-specific operations are delegated to a struct implementing [`AxArchVCpu`].
 ///
@@ -60,8 +61,8 @@ pub struct AxVCpu<A: AxArchVCpu> {
     inner_mut: RefCell<AxVCpuInnerMut>,
     /// The architecture-specific state of the vcpu.
     ///
-    /// `UnsafeCell` is used to allow interior mutability. Note that `RefCell` or `Mutex` is not suitable here
-    /// because it's not possible to drop the guard when launching a vcpu.
+    /// `UnsafeCell` is used to allow interior mutability. Note that `RefCell` or `Mutex` is not
+    /// suitable here because it's not possible to drop the guard when launching a vcpu.
     arch_vcpu: UnsafeCell<A>,
 }
 
@@ -108,19 +109,26 @@ impl<A: AxArchVCpu> AxVCpu<A> {
         self.inner_const.vcpu_id
     }
 
+    /// Get the id of the VM this vcpu belongs to.
+    pub const fn vm_id(&self) -> VMId {
+        self.inner_const.vm_id
+    }
+
     /// Get the id of the physical CPU who has the priority to run this vcpu.
+    ///
     /// Currently unused.
     pub const fn favor_phys_cpu(&self) -> usize {
         self.inner_const.favor_phys_cpu
     }
 
-    /// Get the set of physical CPUs who can run this vcpu.
-    /// If `None`, this vcpu has no limitation and can be scheduled on any physical CPU.
+    /// Get the set of physical CPUs who can run this vcpu. If `None`, this vcpu has no limitation
+    /// and can be scheduled on any physical CPU.
     pub const fn phys_cpu_set(&self) -> Option<usize> {
         self.inner_const.phys_cpu_set
     }
 
-    /// Get whether the vcpu is the BSP. We always assume the first vcpu (vcpu with id #0) is the BSP.
+    /// Get whether the vcpu is the BSP. We always assume the first vcpu (vcpu with id #0) is the
+    /// BSP.
     pub const fn is_bsp(&self) -> bool {
         self.inner_const.vcpu_id == 0
     }
@@ -138,9 +146,11 @@ impl<A: AxArchVCpu> AxVCpu<A> {
         self.inner_mut.borrow_mut().state = state;
     }
 
-    /// Execute a block with the state of the vcpu transitioned from `from` to `to`. If the current state is not `from`, return an error.
+    /// Execute a block with the state of the vcpu transitioned from `from` to `to`. If the current
+    /// state is not `from`, return an error.
     ///
-    /// The state will be set to [`VCpuState::Invalid`] if an error occurs (including the case that the current state is not `from`).
+    /// The state will be set to [`VCpuState::Invalid`] if an error occurs (including the case that
+    /// the current state is not `from`).
     ///
     /// The state will be set to `to` if the block is executed successfully.
     pub fn with_state_transition<F, T>(&self, from: VCpuState, to: VCpuState, f: F) -> AxResult<T>
@@ -184,9 +194,11 @@ impl<A: AxArchVCpu> AxVCpu<A> {
         }
     }
 
-    /// Execute an operation on the architecture-specific vcpu, with the state transitioned from `from` to `to` and the current vcpu set to `&self`.
+    /// Execute an operation on the architecture-specific vcpu, with the state transitioned from
+    /// `from` to `to` and the current vcpu set to `&self`.
     ///
-    /// This method is a combination of [`AxVCpu::with_state_transition`] and [`AxVCpu::with_current_cpu_set`].
+    /// This method is a combination of [`AxVCpu::with_state_transition`] and
+    /// [`AxVCpu::with_current_cpu_set`].
     pub fn manipulate_arch_vcpu<F, T>(&self, from: VCpuState, to: VCpuState, f: F) -> AxResult<T>
     where
         F: FnOnce(&mut A) -> AxResult<T>,
@@ -255,8 +267,9 @@ static mut CURRENT_VCPU: Option<*mut u8> = None;
 
 /// Get the current vcpu on the current physical CPU.
 ///
-/// It's guaranteed that each time before a method of [`AxArchVCpu`] is called, the current vcpu is set to the corresponding [`AxVCpu`].
-/// So methods of [`AxArchVCpu`] can always get the [`AxVCpu`] containing itself by calling this method.
+/// It's guaranteed that each time before a method of [`AxArchVCpu`] is called, the current vcpu is
+/// set to the corresponding [`AxVCpu`]. So methods of [`AxArchVCpu`] can always get the [`AxVCpu`]
+/// containing itself by calling this method.
 pub fn get_current_vcpu<'a, A: AxArchVCpu>() -> Option<&'a AxVCpu<A>> {
     unsafe {
         CURRENT_VCPU
